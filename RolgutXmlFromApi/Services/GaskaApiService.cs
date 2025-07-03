@@ -1,22 +1,15 @@
-﻿using APIDataSyncXMLGenerator.Models;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RolgutXmlFromApi.Data;
 using RolgutXmlFromApi.DTOs;
 using RolgutXmlFromApi.Helpers;
 
-using RolgutXmlFromApi.Helpers;
-
 using RolgutXmlFromApi.Models;
 using Serilog;
-using Serilog.Core;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Runtime.Remoting.Contexts;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RolgutXmlFromApi.Services
@@ -32,83 +25,128 @@ namespace RolgutXmlFromApi.Services
 
         public async Task SyncProducts()
         {
-            int page = 1;
-            bool hasMore = true;
+            HashSet<int> fetchedProductIds = new HashSet<int>();
+            bool hasErrors = false;
 
             using (var client = new HttpClient())
             {
                 ApiHelper.AddDefaultHeaders(_apiSettings, client);
-                while (hasMore)
+
+                foreach (var categoryId in _apiSettings.CategoriesId)
                 {
-                    try
+                    int page = 1;
+                    bool hasMore = true;
+
+                    while (hasMore)
                     {
-                        var url = $"{_apiSettings.BaseUrl}/products?category={_apiSettings.CategoryId}&page={page}&perPage={_apiSettings.ProductsPerPage}&lng=pl";
-                        Log.Information($"Sending request to {url}.");
-                        var response = await client.GetAsync(url);
-
-                        if (!response.IsSuccessStatusCode)
+                        try
                         {
-                            Log.Error($"API error while fetching page {page}: {response.StatusCode}");
-                            continue;
-                        }
+                            var url = $"{_apiSettings.BaseUrl}/products?category={categoryId}&page={page}&perPage={_apiSettings.ProductsPerPage}&lng=pl";
+                            Log.Information($"Sending request to {url}.");
+                            var response = await client.GetAsync(url);
 
-                        var json = await response.Content.ReadAsStringAsync();
-                        var apiResponse = JsonConvert.DeserializeObject<ApiProductsResponse>(json);
-
-                        if (apiResponse.Products == null || apiResponse.Products.Count == 0)
-                        {
-                            hasMore = false;
-                            break;
-                        }
-
-                        using (var db = new MyDbContext())
-                        {
-                            using (var transaction = db.Database.BeginTransaction())
+                            if (!response.IsSuccessStatusCode)
                             {
-                                foreach (var apiProduct in apiResponse.Products)
-                                {
-                                    var product = db.Products.FirstOrDefault(p => p.Id == apiProduct.Id);
+                                Log.Error($"API error while fetching page {page} for category {categoryId}: {response.StatusCode}");
+                                hasErrors = true;
+                                break;
+                            }
 
-                                    if (product == null)
+                            var json = await response.Content.ReadAsStringAsync();
+                            var apiResponse = JsonConvert.DeserializeObject<ApiProductsResponse>(json);
+
+                            if (apiResponse.Products == null || apiResponse.Products.Count == 0)
+                            {
+                                hasMore = false;
+                                break;
+                            }
+
+                            using (var db = new MyDbContext())
+                            {
+                                using (var transaction = db.Database.BeginTransaction())
+                                {
+                                    foreach (var apiProduct in apiResponse.Products)
                                     {
-                                        product = new Product { Id = apiProduct.Id };
-                                        db.Products.Add(product);
+                                        fetchedProductIds.Add(apiProduct.Id);
+                                        var product = db.Products.FirstOrDefault(p => p.Id == apiProduct.Id);
+
+                                        if (product == null)
+                                        {
+                                            product = new Product { Id = apiProduct.Id };
+                                            db.Products.Add(product);
+                                        }
+
+                                        // Update fields
+                                        product.CodeGaska = apiProduct.CodeGaska;
+                                        product.CodeCustomer = apiProduct.CodeCustomer;
+                                        product.Name = apiProduct.Name;
+                                        product.Description = apiProduct.Description;
+                                        product.Ean = apiProduct.Ean;
+                                        product.TechnicalDetails = apiProduct.TechnicalDetails;
+                                        product.WeightGross = apiProduct.GrossWeight;
+                                        product.WeightNet = apiProduct.NetWeight;
+                                        product.SupplierName = apiProduct.SupplierName;
+                                        product.SupplierLogo = apiProduct.SupplierLogo;
+                                        product.InStock = apiProduct.InStock;
+                                        product.CurrencyPrice = apiProduct.CurrencyPrice;
+                                        product.PriceNet = apiProduct.NetPrice;
+                                        product.PriceGross = apiProduct.GrossPrice;
                                     }
 
-                                    // Basic properties
-                                    product.CodeGaska = apiProduct.CodeGaska;
-                                    product.CodeCustomer = apiProduct.CodeCustomer;
-                                    product.Name = apiProduct.Name;
-                                    product.SupplierName = apiProduct.SupplierName;
-                                    product.SupplierLogo = apiProduct.SupplierLogo;
-                                    product.InStock = apiProduct.InStock;
-                                    product.CurrencyPrice = apiProduct.CurrencyPrice;
-                                    product.PriceNet = apiProduct.NetPrice;
-                                    product.PriceGross = apiProduct.GrossPrice;
+                                    await db.Database.ExecuteSqlCommandAsync("SET IDENTITY_INSERT dbo.Products ON;");
+                                    await db.SaveChangesAsync();
+                                    await db.Database.ExecuteSqlCommandAsync("SET IDENTITY_INSERT dbo.Products OFF;");
+
+                                    transaction.Commit();
+                                    Log.Information($"Successfully fetched and updated {apiResponse.Products.Count} products for category {categoryId}.");
                                 }
-
-                                // Enable identity insert for the session
-                                await db.Database.ExecuteSqlCommandAsync("SET IDENTITY_INSERT dbo.Products ON;");
-                                await db.SaveChangesAsync();
-                                await db.Database.ExecuteSqlCommandAsync("SET IDENTITY_INSERT dbo.Products OFF;");
-
-                                transaction.Commit();
-
-                                Log.Information($"Successfully fetched and updated {apiResponse.Products.Count} products.");
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, $"Error while getting products from page {page}.");
-                        continue;
-                    }
-                    finally
-                    {
-                        page++;
-                        Task.Delay(TimeSpan.FromSeconds(_apiSettings.ProductsInterval)).Wait(); // Respect API rate limits
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, $"Error while getting products from page {page} for category {categoryId}.");
+                            hasErrors = true;
+                            break;
+                        }
+                        finally
+                        {
+                            page++;
+                            await Task.Delay(TimeSpan.FromSeconds(_apiSettings.ProductsInterval));
+                        }
                     }
                 }
+            }
+
+            if (hasErrors)
+            {
+                Log.Warning("Errors occurred during product sync. Archiving skipped to avoid data inconsistency.");
+                return;
+            }
+
+            try
+            {
+                Log.Information("Searching for products to archive.");
+                int archivedCount = 0;
+
+                using (var db = new MyDbContext())
+                {
+                    db.Database.CommandTimeout = 240;
+
+                    await db.Products
+                        .Where(p => !fetchedProductIds.Contains(p.Id) && !p.Archived)
+                        .ForEachAsync(p =>
+                        {
+                            p.Archived = true;
+                            archivedCount++;
+                        });
+
+                    await db.SaveChangesAsync();
+                    Log.Information($"Archived {archivedCount} products.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while checking for products to archive.");
             }
         }
 
@@ -120,11 +158,11 @@ namespace RolgutXmlFromApi.Services
             {
                 try
                 {
-                    // Get products that are missing the detail collections
-                    productsToUpdate = db.Products
+                    // Get products that are missing the details collections
+                    productsToUpdate = await db.Products
                         .Where(p => !p.Categories.Any())
                         .Take(_apiSettings.ProductPerDay)
-                        .ToList();
+                        .ToListAsync();
 
                     if (!productsToUpdate.Any())
                     {
@@ -196,7 +234,8 @@ namespace RolgutXmlFromApi.Services
                                 PackRequired = p.PackRequired
                             }).ToList();
 
-                            product.CrossNumbers = updatedProduct.CrossNumbers
+                            product.CrossNumbers = (updatedProduct.CrossNumbers ?? Enumerable.Empty<ApiCrossNumber>())
+                                .Where(c => c != null && !string.IsNullOrEmpty(c.CrossNumber))
                                 .SelectMany(c => c.CrossNumber
                                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                                     .Select(cn => new CrossNumber
@@ -222,7 +261,7 @@ namespace RolgutXmlFromApi.Services
 
                             product.Applications = updatedProduct.Applications.Select(a => new Application
                             {
-                                Id = a.Id,
+                                ApplicationId = a.Id,
                                 ParentID = a.ParentID,
                                 Name = a.Name
                             }).ToList();

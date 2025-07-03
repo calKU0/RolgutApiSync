@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace RolgutXmlFromApi.DTOs
 {
@@ -13,7 +9,7 @@ namespace RolgutXmlFromApi.DTOs
         public string Person { get; set; }
         public string Password { get; set; }
         public string ApiKey { get; set; }
-        public int CategoryId { get; set; }
+        public List<int> CategoriesId { get; set; }
         public int ProductsPerPage { get; set; }
         public int ProductsInterval { get; set; }
         public int ProductPerDay { get; set; }

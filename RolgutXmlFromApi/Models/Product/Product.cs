@@ -1,16 +1,8 @@
-﻿using RolgutXmlFromApi.Models;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
-using Component = RolgutXmlFromApi.Models.Component;
 
-namespace APIDataSyncXMLGenerator.Models
+namespace RolgutXmlFromApi.Models
 {
     public class Product
     {
@@ -21,13 +13,18 @@ namespace APIDataSyncXMLGenerator.Models
         public string CodeGaska { get; set; }
         public string CodeCustomer { get; set; }
         public string Name { get; set; }
+        public string Description { get; set; }
+        public string Ean { get; set; }
+        public string TechnicalDetails { get; set; }
+        public float WeightNet { get; set; }
+        public float WeightGross { get; set; }
         public string SupplierName { get; set; }
         public string SupplierLogo { get; set; }
         public float InStock { get; set; }
         public string CurrencyPrice { get; set; }
         public decimal PriceNet { get; set; }
         public decimal PriceGross { get; set; }
-
+        public bool Archived { get; set; } = false;
         public virtual ICollection<Package> Packages { get; set; }
         public virtual ICollection<CrossNumber> CrossNumbers { get; set; }
         public virtual ICollection<Component> Components { get; set; }

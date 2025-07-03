@@ -1,12 +1,5 @@
-﻿using APIDataSyncXMLGenerator.Models;
-using RolgutXmlFromApi.Models;
-using System;
-using System.Collections.Generic;
+﻿using RolgutXmlFromApi.Models;
 using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 
 namespace RolgutXmlFromApi.Data
 {

@@ -1,6 +1,8 @@
 ﻿using RolgutXmlFromApi.DTOs;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 
 namespace RolgutXmlFromApi.Helpers
 {
@@ -10,12 +12,12 @@ namespace RolgutXmlFromApi.Helpers
         {
             return new GaskaApiSettings
             {
-                BaseUrl = GetString("GaskaApiBaseUrl", required: true),
-                Acronym = GetString("GaskaApiAcronym", required: true),
-                Person = GetString("GaskaApiPerson", required: true),
-                Password = GetString("GaskaApiPassword", required: true),
-                ApiKey = GetString("GaskaApiKey", required: true),
-                CategoryId = GetInt("GaskaApiCategoryId", 0),
+                BaseUrl = GetString("GaskaApiBaseUrl"),
+                Acronym = GetString("GaskaApiAcronym"),
+                Person = GetString("GaskaApiPerson"),
+                Password = GetString("GaskaApiPassword"),
+                ApiKey = GetString("GaskaApiKey"),
+                CategoriesId = GetIntList("GaskaApiCategoriesId"),
                 ProductsPerPage = GetInt("GaskaApiProductsPerPage", 1000),
                 ProductsInterval = GetInt("GaskaApiProductsInterval", 1),
                 ProductPerDay = GetInt("GaskaApiProductPerDay", 500),
@@ -23,14 +25,24 @@ namespace RolgutXmlFromApi.Helpers
             };
         }
 
-        public static int GetLogsExpirationDays() =>
-            GetInt("LogsExpirationDays", 14);
+        public static FtpSettings LoadFtpSettings()
+        {
+            return new FtpSettings
+            {
+                Ip = GetString("FtpIp"),
+                Port = GetInt("FtpPort", 80),
+                Username = GetString("FtpUsername"),
+                Password = GetString("FtpPassword"),
+                Folder = GetString("FtpFolder"),
+            };
+        }
 
-        public static TimeSpan GetFetchInterval() =>
-            TimeSpan.FromMinutes(GetInt("FetchIntervalMinutes", 60));
+        public static int GetLogsExpirationDays() => GetInt("LogsExpirationDays", 14);
+
+        public static TimeSpan GetFetchInterval() => TimeSpan.FromMinutes(GetInt("FetchIntervalMinutes", 60));
 
         // Helpers
-        private static string GetString(string key, bool required = false)
+        private static string GetString(string key, bool required = true)
         {
             var value = ConfigurationManager.AppSettings[key];
 
@@ -47,6 +59,23 @@ namespace RolgutXmlFromApi.Helpers
                 return result;
 
             return defaultValue;
+        }
+
+        private static List<int> GetIntList(string key, char separator = ',', bool required = true)
+        {
+            var raw = ConfigurationManager.AppSettings[key];
+
+            if (required && string.IsNullOrWhiteSpace(raw))
+                throw new ConfigurationErrorsException($"Missing required appSetting: '{key}'");
+
+            return raw?.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries)
+                       .Select(s =>
+                       {
+                           if (int.TryParse(s.Trim(), out int val))
+                               return val;
+                           throw new ConfigurationErrorsException($"Invalid integer in '{key}': '{s}'");
+                       })
+                       .ToList() ?? new List<int>();
         }
     }
 }

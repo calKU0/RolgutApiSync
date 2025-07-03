@@ -1,8 +1,7 @@
 ﻿namespace RolgutXmlFromApi.Migrations
 {
-    using System;
     using System.Data.Entity.Migrations;
-    
+
     public partial class NotIncrementProductId : DbMigration
     {
         public override void Up()
@@ -29,7 +28,7 @@
             AddForeignKey("dbo.RecommendedParts", "ProductId", "dbo.Products", "Id", cascadeDelete: true);
             AddForeignKey("dbo.Applications", "ProductId", "dbo.Products", "Id", cascadeDelete: true);
         }
-        
+
         public override void Down()
         {
             DropForeignKey("dbo.Applications", "ProductId", "dbo.Products");

@@ -104,11 +104,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\MyDbContext.cs" />
+    <Compile Include="DTOs\FtpSettings.cs" />
     <Compile Include="DTOs\GaskaApiSettings.cs" />
     <Compile Include="DTOs\ApiProductResponse.cs" />
     <Compile Include="DTOs\ApiProductsResponse.cs" />
     <Compile Include="Helpers\ApiHelper.cs" />
     <Compile Include="Helpers\AppSettingsLoader.cs" />
+    <Compile Include="Helpers\CategoriesHelper.cs" />
     <Compile Include="Logging\LogConfig.cs" />
     <Compile Include="Migrations\202507021723382_InitialCreate.cs" />
     <Compile Include="Migrations\202507021723382_InitialCreate.Designer.cs">
@@ -121,6 +123,18 @@
     <Compile Include="Migrations\202507022207469_NotIncrementProductId.cs" />
     <Compile Include="Migrations\202507022207469_NotIncrementProductId.Designer.cs">
       <DependentUpon>202507022207469_NotIncrementProductId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202507030820564_ApplicationId.cs" />
+    <Compile Include="Migrations\202507030820564_ApplicationId.Designer.cs">
+      <DependentUpon>202507030820564_ApplicationId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202507030824340_MoreProductData.cs" />
+    <Compile Include="Migrations\202507030824340_MoreProductData.Designer.cs">
+      <DependentUpon>202507030824340_MoreProductData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202507030835068_ArchiveProductFlag.cs" />
+    <Compile Include="Migrations\202507030835068_ArchiveProductFlag.Designer.cs">
+      <DependentUpon>202507030835068_ArchiveProductFlag.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Product\Component.cs" />
@@ -147,6 +161,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\FileService.cs" />
     <Compile Include="Services\GaskaApiService.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +178,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202507022207469_NotIncrementProductId.resx">
       <DependentUpon>202507022207469_NotIncrementProductId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202507030820564_ApplicationId.resx">
+      <DependentUpon>202507030820564_ApplicationId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202507030824340_MoreProductData.resx">
+      <DependentUpon>202507030824340_MoreProductData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202507030835068_ArchiveProductFlag.resx">
+      <DependentUpon>202507030835068_ArchiveProductFlag.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ProjectInstaller.resx">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
