@@ -7,6 +7,7 @@
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
+            AutomaticMigrationDataLossAllowed = false;
         }
 
         protected override void Seed(RolgutXmlFromApi.Data.MyDbContext context)

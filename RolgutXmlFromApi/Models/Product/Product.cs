@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -25,6 +26,8 @@ namespace RolgutXmlFromApi.Models
         public decimal PriceNet { get; set; }
         public decimal PriceGross { get; set; }
         public bool Archived { get; set; } = false;
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime UpdatedDate { get; set; } = DateTime.Now;
         public virtual ICollection<Package> Packages { get; set; }
         public virtual ICollection<CrossNumber> CrossNumbers { get; set; }
         public virtual ICollection<Component> Components { get; set; }

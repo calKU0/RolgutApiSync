@@ -39,9 +39,10 @@ namespace RolgutXmlFromApi.Helpers
 
         public static int GetLogsExpirationDays() => GetInt("LogsExpirationDays", 14);
 
+        public static int GetMinProductPriceToFetch() => GetInt("MinProductPricePLN", 80);
+
         public static TimeSpan GetFetchInterval() => TimeSpan.FromMinutes(GetInt("FetchIntervalMinutes", 60));
 
-        // Helpers
         private static string GetString(string key, bool required = true)
         {
             var value = ConfigurationManager.AppSettings[key];

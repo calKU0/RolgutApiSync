@@ -1,4 +1,5 @@
 ﻿using RolgutXmlFromApi.Data;
+using RolgutXmlFromApi.DTOs;
 using RolgutXmlFromApi.Helpers;
 using RolgutXmlFromApi.Models;
 using Serilog;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -15,16 +17,23 @@ namespace RolgutXmlFromApi.Services
 {
     public class FileService
     {
-        public async Task GenerateXMLFile()
+        private readonly FtpSettings _ftpSettings;
+
+        public FileService(FtpSettings ftpSettings)
         {
+            _ftpSettings = ftpSettings;
+        }
+
+        public async Task<string> GenerateXMLFile()
+        {
+            string resultPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "result");
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string resultFileName = $"products_{timestamp}.xml";
+            string resultFilePath = Path.Combine(resultPath, resultFileName);
+            List<Product> products = new List<Product>();
+
             try
             {
-                string resultPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "result");
-                string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                string resultFileName = $"products_{timestamp}.xml";
-                string resultFilePath = Path.Combine(resultPath, resultFileName);
-                List<Product> products = new List<Product>();
-
                 if (!Directory.Exists(resultPath))
                 {
                     Directory.CreateDirectory(resultPath);
@@ -287,7 +296,36 @@ namespace RolgutXmlFromApi.Services
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error while making XML file.");
+                Log.Error(ex, "Error while making XML file."); ;
+            }
+            return resultFilePath;
+        }
+
+        public async Task UploadFileToFtp(string localFilePath)
+        {
+            try
+            {
+                string ftpUri = $"ftp://{_ftpSettings.Ip}:{_ftpSettings.Port}/{_ftpSettings.Folder}/{localFilePath}";
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpUri);
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+                request.Credentials = new NetworkCredential(_ftpSettings.Username, _ftpSettings.Password);
+
+                byte[] fileContents = File.ReadAllBytes(localFilePath);
+                request.ContentLength = fileContents.Length;
+
+                using (Stream requestStream = await request.GetRequestStreamAsync())
+                {
+                    await requestStream.WriteAsync(fileContents, 0, fileContents.Length);
+                }
+
+                using (FtpWebResponse response = (FtpWebResponse)await request.GetResponseAsync())
+                {
+                    Log.Information($"FTP upload completed: {response.StatusDescription}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error uploading file to FTP.");
             }
         }
 

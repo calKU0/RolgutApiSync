@@ -1,9 +1,12 @@
-﻿using RolgutXmlFromApi.DTOs;
+﻿using RolgutXmlFromApi.Data;
+using RolgutXmlFromApi.DTOs;
 using RolgutXmlFromApi.Helpers;
 using RolgutXmlFromApi.Logging;
 using RolgutXmlFromApi.Services;
 using Serilog;
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,7 +41,7 @@ namespace RolgutXmlFromApi
 
             // Services initialization
             _apiService = new GaskaApiService(_apiSettings);
-            _fileService = new FileService();
+            _fileService = new FileService(_ftpSettings);
 
             InitializeComponent();
         }
@@ -71,27 +74,31 @@ namespace RolgutXmlFromApi
                 _lastRunTime = DateTime.Now;
 
                 // 1. Getting default info about products
-                //await _apiService.SyncProducts();
-                //Log.Information("Basic product sync completed.");
+                await _apiService.SyncProducts();
+                Log.Information("Basic product sync completed.");
 
                 // 2.Getting detailed info about products that are not in db yet
-                //if (_lastProductDetailsSyncDate.Date < DateTime.Today)
-                //{
-                //    await _apiService.SyncProductDetails();
-                //    _lastProductDetailsSyncDate = DateTime.Today;
+                if (_lastProductDetailsSyncDate.Date < DateTime.Today)
+                {
+                    await _apiService.SyncProductDetails();
+                    _lastProductDetailsSyncDate = DateTime.Today;
 
-                //    Log.Information("Detailed product sync completed.");
-                //}
+                    Log.Information("Detailed product sync completed.");
+                }
 
                 // 3. Generate XML file
-                await _fileService.GenerateXMLFile();
+                string resultFile = await _fileService.GenerateXMLFile();
                 Log.Information("XML generation completed.");
 
-                // 4. TODO: Send XML file to FTP
+                // 4. Send XML file to FTP
+                //if (File.Exists(resultFile))
+                //{
+                //    await _fileService.UploadFileToFtp(resultFile);
+                //    Log.Information("Sending XML to FTP completed.");
+                //}
 
-                //Log.Information("Sending XML to FTP completed.");
-                //DateTime nextRun = _lastRunTime.Add(_interval);
-                //Log.Information("All processes completed. Next run scheduled at: {NextRun}", nextRun);
+                DateTime nextRun = _lastRunTime.Add(_interval);
+                Log.Information("All processes completed. Next run scheduled at: {NextRun}", nextRun);
             }
             catch (Exception ex)
             {

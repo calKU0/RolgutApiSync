@@ -17,10 +17,12 @@ namespace RolgutXmlFromApi.Services
     public class GaskaApiService
     {
         private readonly GaskaApiSettings _apiSettings;
+        private readonly int _minProductPrice;
 
         public GaskaApiService(GaskaApiSettings apiCredentials)
         {
             _apiSettings = apiCredentials;
+            _minProductPrice = AppSettingsLoader.GetMinProductPriceToFetch();
         }
 
         public async Task SyncProducts()
@@ -160,9 +162,19 @@ namespace RolgutXmlFromApi.Services
                 {
                     // Get products that are missing the details collections
                     productsToUpdate = await db.Products
-                        .Where(p => !p.Categories.Any())
+                        .Where(p => !p.Categories.Any() && p.PriceNet >= _minProductPrice && !p.Archived)
                         .Take(_apiSettings.ProductPerDay)
                         .ToListAsync();
+
+                    // If nothing was found, fallback to products ordered by UpdatedDate
+                    if (!productsToUpdate.Any())
+                    {
+                        productsToUpdate = await db.Products
+                            .Where(p => p.PriceNet >= _minProductPrice && !p.Archived)
+                            .OrderBy(p => p.UpdatedDate)
+                            .Take(_apiSettings.ProductPerDay)
+                            .ToListAsync();
+                    }
 
                     if (!productsToUpdate.Any())
                     {
