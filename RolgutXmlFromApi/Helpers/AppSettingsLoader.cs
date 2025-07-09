@@ -33,7 +33,6 @@ namespace RolgutXmlFromApi.Helpers
                 Port = GetInt("FtpPort", 80),
                 Username = GetString("FtpUsername"),
                 Password = GetString("FtpPassword"),
-                Folder = GetString("FtpFolder"),
             };
         }
 

@@ -77,7 +77,7 @@ namespace RolgutXmlFromApi
                 await _apiService.SyncProducts();
                 Log.Information("Basic product sync completed.");
 
-                // 2.Getting detailed info about products that are not in db yet
+                //2.Getting detailed info about products that are not in db yet
                 if (_lastProductDetailsSyncDate.Date < DateTime.Today)
                 {
                     await _apiService.SyncProductDetails();
@@ -91,11 +91,11 @@ namespace RolgutXmlFromApi
                 Log.Information("XML generation completed.");
 
                 // 4. Send XML file to FTP
-                //if (File.Exists(resultFile))
-                //{
-                //    await _fileService.UploadFileToFtp(resultFile);
-                //    Log.Information("Sending XML to FTP completed.");
-                //}
+                if (File.Exists(resultFile))
+                {
+                    await _fileService.UploadFileToFtp(resultFile);
+                    Log.Information("Sending XML to FTP completed.");
+                }
 
                 DateTime nextRun = _lastRunTime.Add(_interval);
                 Log.Information("All processes completed. Next run scheduled at: {NextRun}", nextRun);

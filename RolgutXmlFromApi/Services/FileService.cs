@@ -298,6 +298,7 @@ namespace RolgutXmlFromApi.Services
             {
                 Log.Error(ex, "Error while making XML file."); ;
             }
+
             return resultFilePath;
         }
 
@@ -305,7 +306,8 @@ namespace RolgutXmlFromApi.Services
         {
             try
             {
-                string ftpUri = $"ftp://{_ftpSettings.Ip}:{_ftpSettings.Port}/{_ftpSettings.Folder}/{localFilePath}";
+                string fileName = Path.GetFileName(localFilePath).Replace("_", "-");
+                string ftpUri = $"ftp://{_ftpSettings.Ip}:{_ftpSettings.Port}/{fileName}";
                 FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpUri);
                 request.Method = WebRequestMethods.Ftp.UploadFile;
                 request.Credentials = new NetworkCredential(_ftpSettings.Username, _ftpSettings.Password);
@@ -316,11 +318,6 @@ namespace RolgutXmlFromApi.Services
                 using (Stream requestStream = await request.GetRequestStreamAsync())
                 {
                     await requestStream.WriteAsync(fileContents, 0, fileContents.Length);
-                }
-
-                using (FtpWebResponse response = (FtpWebResponse)await request.GetResponseAsync())
-                {
-                    Log.Information($"FTP upload completed: {response.StatusDescription}");
                 }
             }
             catch (Exception ex)
