@@ -306,8 +306,7 @@ namespace RolgutXmlFromApi.Services
         {
             try
             {
-                string fileName = Path.GetFileName(localFilePath).Replace("_", "-");
-                string ftpUri = $"ftp://{_ftpSettings.Ip}:{_ftpSettings.Port}/{fileName}";
+                string ftpUri = $"ftp://{_ftpSettings.Ip}:{_ftpSettings.Port}/products.xml";
                 FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpUri);
                 request.Method = WebRequestMethods.Ftp.UploadFile;
                 request.Credentials = new NetworkCredential(_ftpSettings.Username, _ftpSettings.Password);
