@@ -32,6 +32,9 @@ namespace RolgutXmlFromApi.Services
             string resultFilePath = Path.Combine(resultPath, resultFileName);
             List<Product> products = new List<Product>();
 
+            // Clean up old files
+            CleanupOldXmlFiles();
+
             try
             {
                 if (!Directory.Exists(resultPath))
@@ -349,6 +352,33 @@ namespace RolgutXmlFromApi.Services
                 (c >= 0xE000 && c <= 0xFFFD) ||
                 (c >= 0x10000 && c <= 0x10FFFF)
             ).ToArray());
+        }
+
+        private void CleanupOldXmlFiles()
+        {
+            try
+            {
+                string resultPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "result");
+
+                if (!Directory.Exists(resultPath))
+                    return;
+
+                var files = Directory.GetFiles(resultPath, "*.xml");
+
+                foreach (var file in files)
+                {
+                    var creationTime = File.GetCreationTime(file);
+                    if ((DateTime.Now - creationTime).TotalDays > 1)
+                    {
+                        File.Delete(file);
+                        Log.Information($"Deleted old XML file: {file}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error during cleanup of old XML files.");
+            }
         }
     }
 }
