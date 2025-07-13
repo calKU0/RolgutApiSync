@@ -111,7 +111,9 @@ namespace RolgutXmlFromApi.Services
 
                             if (product.Applications != null && product.Applications.Any())
                             {
-                                var allApplications = product.Applications.ToDictionary(a => a.ApplicationId);
+                                var allApplications = product.Applications
+                                    .GroupBy(a => a.ApplicationId)
+                                    .ToDictionary(g => g.Key, g => g.First());
                                 var parentIds = new HashSet<int>(product.Applications
                                                                  .Where(a => a.ParentID != 0)
                                                                  .Select(a => a.ParentID));
