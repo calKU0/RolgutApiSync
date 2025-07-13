@@ -160,7 +160,9 @@ namespace RolgutXmlFromApi.Services
                             if (product.Categories != null && product.Categories.Any())
                             {
                                 // Build a dictionary of all categories
-                                var allCategories = product.Categories.ToDictionary(c => c.CategoryId);
+                                var allCategories = product.Categories
+                                    .GroupBy(c => c.CategoryId)
+                                    .ToDictionary(g => g.Key, g => g.First());
 
                                 // Get a set of all parent IDs (these are not leaf nodes)
                                 var parentIds = new HashSet<int>(product.Categories
@@ -240,7 +242,9 @@ namespace RolgutXmlFromApi.Services
                             if (product.Applications != null && product.Applications.Any())
                             {
                                 // Build a dictionary of all applications
-                                var allApplications = product.Applications.ToDictionary(c => c.ApplicationId);
+                                var allApplications = product.Applications
+                                    .GroupBy(a => a.ApplicationId)
+                                    .ToDictionary(g => g.Key, g => g.First());
 
                                 var parentIds = new HashSet<int>(product.Applications
                                                                   .Where(c => c.ParentID != 0)
