@@ -234,6 +234,7 @@ namespace RolgutXmlFromApi.Services
                             product.CurrencyPrice = updatedProduct.CurrencyPrice;
                             product.PriceNet = updatedProduct.PriceNet;
                             product.PriceGross = updatedProduct.PriceGross;
+                            product.UpdatedDate = DateTime.Now;
 
                             // Map updated collections
                             product.Packages = updatedProduct.Packages.Select(p => new Package
