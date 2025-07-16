@@ -91,9 +91,9 @@ namespace RolgutXmlFromApi.Services
                                 descriptionBuilder.Append("</p>");
                             }
 
-                            if (!string.IsNullOrEmpty(product.Description))
+                            if (!string.IsNullOrEmpty(product.TechnicalDetails))
                             {
-                                descriptionBuilder.Append("<p><b>Opis techniczny: </b>");
+                                descriptionBuilder.Append("<p><b>Porady techniczne: </b>");
                                 descriptionBuilder.Append(product.TechnicalDetails);
                                 descriptionBuilder.Append("</p>");
                             }
@@ -114,35 +114,54 @@ namespace RolgutXmlFromApi.Services
 
                             if (product.Applications != null && product.Applications.Any())
                             {
-                                var allApplications = product.Applications
-                                    .GroupBy(a => a.ApplicationId)
-                                    .ToDictionary(g => g.Key, g => g.First());
-                                var parentIds = new HashSet<int>(product.Applications
-                                                                 .Where(a => a.ParentID != 0)
-                                                                 .Select(a => a.ParentID));
+                                // Group applications by their ParentID to build a tree
+                                var applicationsByParent = product.Applications
+                                    .GroupBy(a => a.ParentID)
+                                    .ToDictionary(g => g.Key, g => g.ToList());
 
-                                var writtenPaths = new HashSet<string>();
-                                var applicationPaths = new List<string>();
-
-                                foreach (var app in product.Applications)
+                                // Recursive method to build HTML list from application tree
+                                string BuildApplicationHtmlList(List<Application> apps)
                                 {
-                                    if (parentIds.Contains(app.ApplicationId))
-                                        continue;
+                                    if (apps == null || !apps.Any())
+                                        return string.Empty;
 
-                                    string fullPath = CategoriesHelper.GetCategoryFullPath(app, allApplications);
+                                    var sb = new StringBuilder();
+                                    sb.Append("<ul>");
 
-                                    if (!writtenPaths.Contains(fullPath))
+                                    foreach (var app in apps)
                                     {
-                                        applicationPaths.Add(fullPath);
-                                        writtenPaths.Add(fullPath);
+                                        sb.Append("<li>");
+                                        sb.Append(app.Name);
+
+                                        // Check if this application has children
+                                        if (applicationsByParent.ContainsKey(app.ApplicationId))
+                                        {
+                                            var children = applicationsByParent[app.ApplicationId];
+                                            sb.Append(BuildApplicationHtmlList(children));
+                                        }
+
+                                        // If leaf node with same-name siblings, group them by their immediate parent and list values
+                                        if (!applicationsByParent.ContainsKey(app.ApplicationId))
+                                        {
+                                            // You can implement value grouping here if needed
+                                        }
+
+                                        sb.Append("</li>");
                                     }
+
+                                    sb.Append("</ul>");
+                                    return sb.ToString();
                                 }
 
-                                if (applicationPaths.Any())
+                                // Start building from root nodes (ParentID == 0)
+                                if (applicationsByParent.ContainsKey(0))
                                 {
-                                    descriptionBuilder.Append("<p><b>Zastosowanie: </b>");
-                                    descriptionBuilder.Append(string.Join(", ", applicationPaths));
-                                    descriptionBuilder.Append("</p>");
+                                    var rootApplications = applicationsByParent[0];
+
+                                    descriptionBuilder.Append("<div class=\"product-applications\">");
+                                    descriptionBuilder.Append("<p><b>Zastosowanie: </b></p>");
+                                    descriptionBuilder.Append(BuildApplicationHtmlList(rootApplications));
+                                    descriptionBuilder.Append("</div>");
                                 }
                             }
 
@@ -241,39 +260,6 @@ namespace RolgutXmlFromApi.Services
                                     writer.WriteEndElement(); // Parameter
                                 }
                                 writer.WriteEndElement(); // Parameters
-                            }
-
-                            // Applications
-                            if (product.Applications != null && product.Applications.Any())
-                            {
-                                // Build a dictionary of all applications
-                                var allApplications = product.Applications
-                                    .GroupBy(a => a.ApplicationId)
-                                    .ToDictionary(g => g.Key, g => g.First());
-
-                                var parentIds = new HashSet<int>(product.Applications
-                                                                  .Where(c => c.ParentID != 0)
-                                                                  .Select(c => c.ParentID));
-
-                                writer.WriteStartElement("Applications");
-
-                                var writtenPaths = new HashSet<string>();
-
-                                foreach (var app in product.Applications)
-                                {
-                                    if (parentIds.Contains(app.ApplicationId))
-                                        continue;
-
-                                    string fullPath = CategoriesHelper.GetCategoryFullPath(app, allApplications);
-
-                                    if (!writtenPaths.Contains(fullPath))
-                                    {
-                                        WriteRawElement(writer, "Application", fullPath);
-                                        writtenPaths.Add(fullPath);
-                                    }
-                                }
-
-                                writer.WriteEndElement(); // Applications
                             }
 
                             // RecommendedParts
