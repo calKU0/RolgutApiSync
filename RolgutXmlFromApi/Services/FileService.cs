@@ -114,13 +114,12 @@ namespace RolgutXmlFromApi.Services
 
                             if (product.Applications != null && product.Applications.Any())
                             {
-                                // Group applications by their ParentID to build a tree
+                                // Group applications by ParentID to build a tree
                                 var applicationsByParent = product.Applications
                                     .GroupBy(a => a.ParentID)
                                     .ToDictionary(g => g.Key, g => g.ToList());
 
-                                // Recursive method to build HTML list from application tree
-                                string BuildApplicationHtmlList(List<Application> apps)
+                                string BuildApplicationHtmlList(List<Application> apps, int depth = 1)
                                 {
                                     if (apps == null || !apps.Any())
                                         return string.Empty;
@@ -128,32 +127,63 @@ namespace RolgutXmlFromApi.Services
                                     var sb = new StringBuilder();
                                     sb.Append("<ul>");
 
-                                    foreach (var app in apps)
+                                    if (depth >= 3)
                                     {
-                                        sb.Append("<li>");
-                                        sb.Append(app.Name);
+                                        var nodesWithChildren = apps.Where(a => applicationsByParent.ContainsKey(a.ApplicationId)).ToList();
+                                        var leafNodes = apps.Where(a => !applicationsByParent.ContainsKey(a.ApplicationId)).ToList();
 
-                                        // Check if this application has children
-                                        if (applicationsByParent.ContainsKey(app.ApplicationId))
+                                        // Check if all siblings are leaves (no siblings with children)
+                                        bool allSiblingsAreLeaves = !apps.Any(a => applicationsByParent.ContainsKey(a.ApplicationId));
+
+                                        // Render nodes with children first
+                                        foreach (var app in nodesWithChildren)
                                         {
-                                            var children = applicationsByParent[app.ApplicationId];
-                                            sb.Append(BuildApplicationHtmlList(children));
+                                            sb.Append("<li>");
+                                            sb.Append(app.Name);
+                                            sb.Append(BuildApplicationHtmlList(applicationsByParent[app.ApplicationId], depth + 1));
+                                            sb.Append("</li>");
                                         }
 
-                                        // If leaf node with same-name siblings, group them by their immediate parent and list values
-                                        if (!applicationsByParent.ContainsKey(app.ApplicationId))
+                                        if (leafNodes.Any())
                                         {
-                                            // You can implement value grouping here if needed
+                                            if (allSiblingsAreLeaves)
+                                            {
+                                                // All siblings are leaves — group them
+                                                sb.Append("<li>");
+                                                sb.Append(string.Join(", ", leafNodes.Select(a => a.Name)));
+                                                sb.Append("</li>");
+                                            }
+                                            else
+                                            {
+                                                // Mixed siblings — output each leaf separately
+                                                foreach (var app in leafNodes)
+                                                {
+                                                    sb.Append("<li>");
+                                                    sb.Append(app.Name);
+                                                    sb.Append("</li>");
+                                                }
+                                            }
                                         }
+                                    }
+                                    else
+                                    {
+                                        // depth 1 or 2: no grouping - all separate <li>
+                                        foreach (var app in apps)
+                                        {
+                                            sb.Append("<li>");
+                                            sb.Append(app.Name);
 
-                                        sb.Append("</li>");
+                                            if (applicationsByParent.ContainsKey(app.ApplicationId))
+                                                sb.Append(BuildApplicationHtmlList(applicationsByParent[app.ApplicationId], depth + 1));
+
+                                            sb.Append("</li>");
+                                        }
                                     }
 
                                     sb.Append("</ul>");
                                     return sb.ToString();
                                 }
 
-                                // Start building from root nodes (ParentID == 0)
                                 if (applicationsByParent.ContainsKey(0))
                                 {
                                     var rootApplications = applicationsByParent[0];
@@ -322,22 +352,38 @@ namespace RolgutXmlFromApi.Services
 
         private static void WriteRawElement(XmlWriter writer, string elementName, string value)
         {
-            string sanitizedValue = RemoveInvalidXmlChars(value);
+            string sanitizedValue = CleanAndSanitizeText(value);
             writer.WriteStartElement(elementName);
             writer.WriteRaw($"<![CDATA[{sanitizedValue}]]>");
             writer.WriteEndElement();
         }
 
-        private static string RemoveInvalidXmlChars(string text)
+        private static string CleanAndSanitizeText(string input)
         {
-            if (string.IsNullOrEmpty(text)) return string.Empty;
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
 
-            return new string(text.Where(c =>
+            // First, normalize and replace known invisible/unwanted characters
+            var normalized = input.Normalize(NormalizationForm.FormC);
+
+            normalized = normalized
+                .Replace('\u00A0', ' ')  // non-breaking space
+                .Replace('\u0081', ' ')  // likely your corrupted character
+                .Replace('\u200B', ' ')  // zero-width space
+                .Replace('\u202F', ' ')  // narrow no-break space
+                .Replace('\uFEFF', ' ')  // byte-order mark
+                .Replace('\u00AD', ' ')  // soft hyphen
+                .Trim();
+
+            // Then remove XML-invalid characters
+            var cleaned = new string(normalized.Where(c =>
                 c == '\t' || c == '\n' || c == '\r' ||
                 (c >= 32 && c <= 0xD7FF) ||
                 (c >= 0xE000 && c <= 0xFFFD) ||
                 (c >= 0x10000 && c <= 0x10FFFF)
             ).ToArray());
+
+            return cleaned;
         }
 
         private void CleanupOldXmlFiles()

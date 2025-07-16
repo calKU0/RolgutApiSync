@@ -77,7 +77,7 @@ namespace RolgutXmlFromApi
                 await _apiService.SyncProducts();
                 Log.Information("Basic product sync completed.");
 
-                //2.Getting detailed info about products that are not in db yet
+                // 2.Getting detailed info about products that are not in db yet
                 if (_lastProductDetailsSyncDate.Date < DateTime.Today)
                 {
                     await _apiService.SyncProductDetails();
