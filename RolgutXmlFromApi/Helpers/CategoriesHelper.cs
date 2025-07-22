@@ -5,18 +5,21 @@ namespace RolgutXmlFromApi.Helpers
 {
     public static class CategoriesHelper
     {
-        public static string GetCategoryFullPath(ProductCategory cat, Dictionary<int, ProductCategory> allCategories)
+        public static (string Path, List<int> PathIds) GetCategoryFullPathWithIds(ProductCategory cat, Dictionary<int, ProductCategory> allCategories)
         {
             var path = new List<string>();
+            var ids = new List<int>();
             var current = cat;
+
             while (current != null)
             {
                 path.Insert(0, current.Name);
-                current = allCategories.ContainsKey(current.ParentID)
-                    ? allCategories[current.ParentID]
-                    : null;
+                ids.Insert(0, current.CategoryId);
+
+                current = allCategories.TryGetValue(current.ParentID, out var parent) ? parent : null;
             }
-            return string.Join("/", path);
+
+            return (string.Join("/", path), ids);
         }
 
         public static string GetCategoryFullPath(Application app, Dictionary<int, Application> allApplications)

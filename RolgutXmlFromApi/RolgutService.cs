@@ -41,7 +41,7 @@ namespace RolgutXmlFromApi
 
             // Services initialization
             _apiService = new GaskaApiService(_apiSettings);
-            _fileService = new FileService(_ftpSettings);
+            _fileService = new FileService(_ftpSettings, _apiSettings.CategoriesId);
 
             InitializeComponent();
         }

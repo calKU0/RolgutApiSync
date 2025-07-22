@@ -18,10 +18,12 @@ namespace RolgutXmlFromApi.Services
     public class FileService
     {
         private readonly FtpSettings _ftpSettings;
+        private readonly IEnumerable<int> _categoriesId;
 
-        public FileService(FtpSettings ftpSettings)
+        public FileService(FtpSettings ftpSettings, IEnumerable<int> categoriesId)
         {
             _ftpSettings = ftpSettings;
+            _categoriesId = categoriesId;
         }
 
         public async Task<string> GenerateXMLFile()
@@ -213,12 +215,12 @@ namespace RolgutXmlFromApi.Services
 
                             if (product.Categories != null && product.Categories.Any())
                             {
-                                // Build a dictionary of all categories
+                                var allowedIds = new HashSet<int>(_categoriesId);
+
                                 var allCategories = product.Categories
                                     .GroupBy(c => c.CategoryId)
                                     .ToDictionary(g => g.Key, g => g.First());
 
-                                // Get a set of all parent IDs (these are not leaf nodes)
                                 var parentIds = new HashSet<int>(product.Categories
                                     .Where(c => c.ParentID != 0)
                                     .Select(c => c.ParentID));
@@ -229,13 +231,14 @@ namespace RolgutXmlFromApi.Services
 
                                 foreach (var cat in product.Categories)
                                 {
-                                    // Skip if it's a parent of any other category — we only want leaf nodes
+                                    // Only process leaf categories
                                     if (parentIds.Contains(cat.CategoryId))
                                         continue;
 
-                                    string fullPath = CategoriesHelper.GetCategoryFullPath(cat, allCategories);
+                                    var (fullPath, pathIds) = CategoriesHelper.GetCategoryFullPathWithIds(cat, allCategories);
 
-                                    if (!writtenPaths.Contains(fullPath))
+                                    // Only write path if any ID in the path is in the allowed set
+                                    if (pathIds.Any(id => allowedIds.Contains(id)) && !writtenPaths.Contains(fullPath))
                                     {
                                         WriteRawElement(writer, "Category", fullPath);
                                         writtenPaths.Add(fullPath);

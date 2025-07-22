@@ -93,6 +93,7 @@ namespace RolgutXmlFromApi.Services
                                         product.CurrencyPrice = apiProduct.CurrencyPrice;
                                         product.PriceNet = apiProduct.NetPrice;
                                         product.PriceGross = apiProduct.GrossPrice;
+                                        product.Archived = false; // Reset archived status
                                     }
 
                                     await db.Database.ExecuteSqlCommandAsync("SET IDENTITY_INSERT dbo.Products ON;");
