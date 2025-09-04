@@ -17,10 +17,10 @@ namespace RolgutXmlFromApi.Services
 {
     public class FileService
     {
-        private readonly FtpSettings _ftpSettings;
+        private readonly List<FtpSettings> _ftpSettings;
         private readonly IEnumerable<int> _categoriesId;
 
-        public FileService(FtpSettings ftpSettings, IEnumerable<int> categoriesId)
+        public FileService(List<FtpSettings> ftpSettings, IEnumerable<int> categoriesId)
         {
             _ftpSettings = ftpSettings;
             _categoriesId = categoriesId;
@@ -334,17 +334,20 @@ namespace RolgutXmlFromApi.Services
         {
             try
             {
-                string ftpUri = $"ftp://{_ftpSettings.Ip}:{_ftpSettings.Port}/products.xml";
-                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpUri);
-                request.Method = WebRequestMethods.Ftp.UploadFile;
-                request.Credentials = new NetworkCredential(_ftpSettings.Username, _ftpSettings.Password);
-
-                byte[] fileContents = File.ReadAllBytes(localFilePath);
-                request.ContentLength = fileContents.Length;
-
-                using (Stream requestStream = await request.GetRequestStreamAsync())
+                foreach (var ftp in _ftpSettings)
                 {
-                    await requestStream.WriteAsync(fileContents, 0, fileContents.Length);
+                    string ftpUri = $"ftp://{ftp.Ip}:{ftp.Port}/products.xml";
+                    FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpUri);
+                    request.Method = WebRequestMethods.Ftp.UploadFile;
+                    request.Credentials = new NetworkCredential(ftp.Username, ftp.Password);
+
+                    byte[] fileContents = File.ReadAllBytes(localFilePath);
+                    request.ContentLength = fileContents.Length;
+
+                    using (Stream requestStream = await request.GetRequestStreamAsync())
+                    {
+                        await requestStream.WriteAsync(fileContents, 0, fileContents.Length);
+                    }
                 }
             }
             catch (Exception ex)

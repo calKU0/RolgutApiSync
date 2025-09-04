@@ -67,41 +67,64 @@ namespace RolgutXmlFromApi.Services
                             {
                                 using (var transaction = db.Database.BeginTransaction())
                                 {
-                                    foreach (var apiProduct in apiResponse.Products)
+                                    try
                                     {
-                                        fetchedProductIds.Add(apiProduct.Id);
-                                        var product = db.Products.FirstOrDefault(p => p.Id == apiProduct.Id);
+                                        var incomingIds = apiResponse.Products.Select(p => p.Id).ToList();
+                                        var existingProducts = db.Products
+                                                                 .Where(p => incomingIds.Contains(p.Id))
+                                                                 .ToDictionary(p => p.Id);
 
-                                        if (product == null)
+                                        foreach (var apiProduct in apiResponse.Products)
                                         {
-                                            product = new Product { Id = apiProduct.Id };
-                                            db.Products.Add(product);
+                                            try
+                                            {
+                                                fetchedProductIds.Add(apiProduct.Id);
+
+                                                Product product;
+                                                if (!existingProducts.TryGetValue(apiProduct.Id, out product))
+                                                {
+                                                    product = new Product { Id = apiProduct.Id };
+                                                    db.Products.Add(product);
+                                                }
+
+                                                product.CodeGaska = apiProduct.CodeGaska;
+                                                product.CodeCustomer = apiProduct.CodeCustomer;
+                                                product.Name = apiProduct.Name;
+                                                product.Description = apiProduct.Description;
+                                                product.Ean = apiProduct.Ean;
+                                                product.TechnicalDetails = apiProduct.TechnicalDetails;
+                                                product.WeightGross = apiProduct.GrossWeight;
+                                                product.WeightNet = apiProduct.NetWeight;
+                                                product.SupplierName = apiProduct.SupplierName;
+                                                product.SupplierLogo = apiProduct.SupplierLogo;
+                                                product.InStock = apiProduct.InStock;
+                                                product.CurrencyPrice = apiProduct.CurrencyPrice;
+                                                product.PriceNet = apiProduct.NetPrice;
+                                                product.PriceGross = apiProduct.GrossPrice;
+                                                product.Archived = false;
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                Log.Error(ex, $"Error while processing product with ID {apiProduct.Id} for category {categoryId}.");
+                                                hasErrors = true;
+                                                continue;
+                                            }
                                         }
 
-                                        // Update fields
-                                        product.CodeGaska = apiProduct.CodeGaska;
-                                        product.CodeCustomer = apiProduct.CodeCustomer;
-                                        product.Name = apiProduct.Name;
-                                        product.Description = apiProduct.Description;
-                                        product.Ean = apiProduct.Ean;
-                                        product.TechnicalDetails = apiProduct.TechnicalDetails;
-                                        product.WeightGross = apiProduct.GrossWeight;
-                                        product.WeightNet = apiProduct.NetWeight;
-                                        product.SupplierName = apiProduct.SupplierName;
-                                        product.SupplierLogo = apiProduct.SupplierLogo;
-                                        product.InStock = apiProduct.InStock;
-                                        product.CurrencyPrice = apiProduct.CurrencyPrice;
-                                        product.PriceNet = apiProduct.NetPrice;
-                                        product.PriceGross = apiProduct.GrossPrice;
-                                        product.Archived = false; // Reset archived status
+                                        // Only needed if Id is an identity column AND you're inserting known IDs
+                                        await db.Database.ExecuteSqlCommandAsync("SET IDENTITY_INSERT dbo.Products ON;");
+                                        await db.SaveChangesAsync();
+                                        await db.Database.ExecuteSqlCommandAsync("SET IDENTITY_INSERT dbo.Products OFF;");
+
+                                        transaction.Commit();
+                                        Log.Information($"Successfully fetched and updated {apiResponse.Products.Count} products for category {categoryId}.");
                                     }
-
-                                    await db.Database.ExecuteSqlCommandAsync("SET IDENTITY_INSERT dbo.Products ON;");
-                                    await db.SaveChangesAsync();
-                                    await db.Database.ExecuteSqlCommandAsync("SET IDENTITY_INSERT dbo.Products OFF;");
-
-                                    transaction.Commit();
-                                    Log.Information($"Successfully fetched and updated {apiResponse.Products.Count} products for category {categoryId}.");
+                                    catch (Exception ex)
+                                    {
+                                        transaction.Rollback();
+                                        Log.Error(ex, $"Transaction failed while processing products for category {categoryId}.");
+                                        hasErrors = true;
+                                    }
                                 }
                             }
                         }

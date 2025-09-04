@@ -5,6 +5,7 @@ using RolgutXmlFromApi.Logging;
 using RolgutXmlFromApi.Services;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.ServiceProcess;
@@ -18,7 +19,7 @@ namespace RolgutXmlFromApi
         // Settings
         private readonly GaskaApiSettings _apiSettings;
 
-        private readonly FtpSettings _ftpSettings;
+        private readonly List<FtpSettings> _ftpSettings;
         private readonly TimeSpan _interval;
         private readonly int _logsExpirationDays;
 
@@ -35,7 +36,7 @@ namespace RolgutXmlFromApi
         {
             // App Settings initialization
             _apiSettings = AppSettingsLoader.LoadApiSettings();
-            _ftpSettings = AppSettingsLoader.LoadFtpSettings();
+            _ftpSettings = AppSettingsLoader.LoadFtpSettingsList();
             _interval = AppSettingsLoader.GetFetchInterval();
             _logsExpirationDays = AppSettingsLoader.GetLogsExpirationDays();
 

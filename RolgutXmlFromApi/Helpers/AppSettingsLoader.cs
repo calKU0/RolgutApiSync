@@ -25,15 +25,29 @@ namespace RolgutXmlFromApi.Helpers
             };
         }
 
-        public static FtpSettings LoadFtpSettings()
+        public static List<FtpSettings> LoadFtpSettingsList()
         {
-            return new FtpSettings
+            var servers = GetString("FtpServers")
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.Trim())
+                .ToList();
+
+            var ftpList = new List<FtpSettings>();
+
+            foreach (var server in servers)
             {
-                Ip = GetString("FtpIp"),
-                Port = GetInt("FtpPort", 80),
-                Username = GetString("FtpUsername"),
-                Password = GetString("FtpPassword"),
-            };
+                var ftp = new FtpSettings
+                {
+                    Ip = GetString($"{server}_Ip"),
+                    Port = GetInt($"{server}_Port", 21),
+                    Username = GetString($"{server}_Username"),
+                    Password = GetString($"{server}_Password")
+                };
+
+                ftpList.Add(ftp);
+            }
+
+            return ftpList;
         }
 
         public static int GetLogsExpirationDays() => GetInt("LogsExpirationDays", 14);
