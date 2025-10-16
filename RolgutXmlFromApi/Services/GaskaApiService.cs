@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
-using RolgutXmlFromApi.Data;
-using RolgutXmlFromApi.DTOs;
-using RolgutXmlFromApi.Helpers;
-
-using RolgutXmlFromApi.Models;
+using GaskaSyncService.Data;
+using GaskaSyncService.DTOs;
+using GaskaSyncService.Helpers;
+using GaskaSyncService.Settings;
+using GaskaSyncService.Models;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace RolgutXmlFromApi.Services
+namespace GaskaSyncService.Services
 {
     public class GaskaApiService
     {

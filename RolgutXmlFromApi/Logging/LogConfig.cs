@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-namespace RolgutXmlFromApi.Logging
+namespace GaskaSyncService.Logging
 {
     public static class LogConfig
     {

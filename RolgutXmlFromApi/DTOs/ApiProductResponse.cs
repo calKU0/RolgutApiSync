@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RolgutXmlFromApi.DTOs
+namespace GaskaSyncService.DTOs
 {
     public class ApiProductResponse
     {

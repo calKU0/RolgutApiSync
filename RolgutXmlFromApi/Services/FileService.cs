@@ -1,7 +1,7 @@
-﻿using RolgutXmlFromApi.Data;
-using RolgutXmlFromApi.DTOs;
-using RolgutXmlFromApi.Helpers;
-using RolgutXmlFromApi.Models;
+﻿using GaskaSyncService.Data;
+using GaskaSyncService.Settings;
+using GaskaSyncService.Helpers;
+using GaskaSyncService.Models;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace RolgutXmlFromApi.Services
+namespace GaskaSyncService.Services
 {
     public class FileService
     {

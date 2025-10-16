@@ -1,10 +1,10 @@
-﻿using RolgutXmlFromApi.DTOs;
+﻿using GaskaSyncService.Settings;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 
-namespace RolgutXmlFromApi.Helpers
+namespace GaskaSyncService.Helpers
 {
     public static class AppSettingsLoader
     {

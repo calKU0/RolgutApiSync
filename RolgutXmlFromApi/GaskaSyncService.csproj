@@ -8,8 +8,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{13E46B0E-6509-4A84-AABC-904769242417}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>RolgutXmlFromApi</RootNamespace>
-    <AssemblyName>RolgutXmlFromApi</AssemblyName>
+    <RootNamespace>GaskaSyncService</RootNamespace>
+    <AssemblyName>GaskaSyncService</AssemblyName>
     <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -176,8 +176,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\MyDbContext.cs" />
-    <Compile Include="DTOs\FtpSettings.cs" />
-    <Compile Include="DTOs\GaskaApiSettings.cs" />
+    <Compile Include="Settings\FtpSettings.cs" />
+    <Compile Include="Settings\GaskaApiSettings.cs" />
     <Compile Include="DTOs\ApiProductResponse.cs" />
     <Compile Include="DTOs\ApiProductsResponse.cs" />
     <Compile Include="Helpers\ApiHelper.cs" />
@@ -233,11 +233,11 @@
     <Compile Include="ProjectInstaller.Designer.cs">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
-    <Compile Include="RolgutService.cs">
+    <Compile Include="GaskaSyncService.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="RolgutService.Designer.cs">
-      <DependentUpon>RolgutService.cs</DependentUpon>
+    <Compile Include="GaskaSyncService.Designer.cs">
+      <DependentUpon>GaskaSyncService.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

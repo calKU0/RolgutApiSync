@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace RolgutXmlFromApi.Models
+namespace GaskaSyncService.Models
 {
     public class ProductParameter
     {

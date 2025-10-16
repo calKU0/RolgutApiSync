@@ -1,4 +1,4 @@
-﻿namespace RolgutXmlFromApi.DTOs
+﻿namespace GaskaSyncService.Settings
 {
     public class FtpSettings
     {

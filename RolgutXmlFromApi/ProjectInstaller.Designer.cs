@@ -1,4 +1,4 @@
-﻿namespace RolgutXmlFromApi
+﻿namespace GaskaSyncService
 {
     partial class ProjectInstaller
     {
@@ -42,8 +42,8 @@
             this.serviceInstaller1.DelayedAutoStart = true;
             this.serviceInstaller1.Description = "Serwis pobierający produkty z API Gaski, wrzucający je do bazy danych oraz generu" +
     "jący plik XML, który jest potem przesyłany na FTP i importowany do presta.";
-            this.serviceInstaller1.DisplayName = "GaskaApiService";
-            this.serviceInstaller1.ServiceName = "GaskaApiService";
+            this.serviceInstaller1.DisplayName = "GaskaSyncService";
+            this.serviceInstaller1.ServiceName = "GaskaSyncService";
             this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
             // 
             // ProjectInstaller

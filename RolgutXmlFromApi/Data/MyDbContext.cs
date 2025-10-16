@@ -1,8 +1,8 @@
-﻿using RolgutXmlFromApi.Models;
+﻿using GaskaSyncService.Models;
 using System;
 using System.Data.Entity;
 
-namespace RolgutXmlFromApi.Data
+namespace GaskaSyncService.Data
 {
     public class MyDbContext : DbContext
     {

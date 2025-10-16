@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RolgutXmlFromApi.DTOs
+namespace GaskaSyncService.Settings
 {
     public class GaskaApiSettings
     {

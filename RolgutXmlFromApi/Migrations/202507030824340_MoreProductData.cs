@@ -1,4 +1,4 @@
-﻿namespace RolgutXmlFromApi.Migrations
+﻿namespace GaskaSyncService.Migrations
 {
     using System.Data.Entity.Migrations;
 

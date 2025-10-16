@@ -1,6 +1,6 @@
 ﻿using System.ServiceProcess;
 
-namespace RolgutXmlFromApi
+namespace GaskaSyncService
 {
     internal static class Program
     {
@@ -13,7 +13,7 @@ namespace RolgutXmlFromApi
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[]
             {
-                new RolgutService()
+                new GaskaSyncService()
             };
             ServiceBase.Run(ServicesToRun);
         }

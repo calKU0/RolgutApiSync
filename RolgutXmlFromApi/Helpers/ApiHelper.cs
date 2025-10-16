@@ -1,11 +1,11 @@
-﻿using RolgutXmlFromApi.DTOs;
+﻿using GaskaSyncService.Settings;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace RolgutXmlFromApi.Helpers
+namespace GaskaSyncService.Helpers
 {
     public static class ApiHelper
     {

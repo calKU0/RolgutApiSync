@@ -1,8 +1,8 @@
-﻿using RolgutXmlFromApi.Data;
-using RolgutXmlFromApi.DTOs;
-using RolgutXmlFromApi.Helpers;
-using RolgutXmlFromApi.Logging;
-using RolgutXmlFromApi.Services;
+﻿using GaskaSyncService.Data;
+using GaskaSyncService.Settings;
+using GaskaSyncService.Helpers;
+using GaskaSyncService.Logging;
+using GaskaSyncService.Services;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -12,9 +12,9 @@ using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RolgutXmlFromApi
+namespace GaskaSyncService
 {
-    public partial class RolgutService : ServiceBase
+    public partial class GaskaSyncService : ServiceBase
     {
         // Settings
         private readonly GaskaApiSettings _apiSettings;
@@ -32,7 +32,7 @@ namespace RolgutXmlFromApi
         private DateTime _lastProductDetailsSyncDate = DateTime.MinValue;
         private DateTime _lastRunTime;
 
-        public RolgutService()
+        public GaskaSyncService()
         {
             // App Settings initialization
             _apiSettings = AppSettingsLoader.LoadApiSettings();

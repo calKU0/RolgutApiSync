@@ -1,8 +1,8 @@
-﻿namespace RolgutXmlFromApi.Migrations
+﻿namespace GaskaSyncService.Migrations
 {
     using System.Data.Entity.Migrations;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<RolgutXmlFromApi.Data.MyDbContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<global::GaskaSyncService.Data.MyDbContext>
     {
         public Configuration()
         {
@@ -10,7 +10,7 @@
             AutomaticMigrationDataLossAllowed = false;
         }
 
-        protected override void Seed(RolgutXmlFromApi.Data.MyDbContext context)
+        protected override void Seed(global::GaskaSyncService.Data.MyDbContext context)
         {
         }
     }

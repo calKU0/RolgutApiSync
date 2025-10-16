@@ -1,6 +1,6 @@
-﻿namespace RolgutXmlFromApi
+﻿namespace GaskaSyncService
 {
-    partial class RolgutService
+    partial class GaskaSyncService
     {
         /// <summary> 
         /// Wymagana zmienna projektanta.

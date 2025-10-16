@@ -1,7 +1,7 @@
-﻿using RolgutXmlFromApi.Models;
+﻿using GaskaSyncService.Models;
 using System.Collections.Generic;
 
-namespace RolgutXmlFromApi.Helpers
+namespace GaskaSyncService.Helpers
 {
     public static class CategoriesHelper
     {

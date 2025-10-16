@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace RolgutXmlFromApi
+namespace GaskaSyncService
 {
     [RunInstaller(true)]
     public partial class ProjectInstaller : System.Configuration.Install.Installer
