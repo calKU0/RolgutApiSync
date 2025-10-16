@@ -81,6 +81,13 @@ namespace GaskaSyncService.Services
                             WriteRawElement(writer, "WeightNet", product.WeightNet.ToString());
                             WriteRawElement(writer, "WeightGross", product.WeightGross.ToString());
                             WriteRawElement(writer, "Stock", product.InStock.ToString());
+
+                            var requiredPackage = product.Packages?.FirstOrDefault(p => p.PackRequired == 1);
+                            if (requiredPackage != null)
+                                WriteRawElement(writer, "Packaging", requiredPackage.PackQty.ToString());
+                            else
+                                WriteRawElement(writer, "Packaging", "1");
+
                             WriteRawElement(writer, "PriceNet", product.PriceNet.ToString());
                             WriteRawElement(writer, "PriceGross", product.PriceGross.ToString());
 
